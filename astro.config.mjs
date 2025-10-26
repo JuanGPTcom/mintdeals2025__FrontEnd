@@ -11,8 +11,12 @@ export default defineConfig({
 
   adapter: cloudflare({
     mode: 'directory',
-    //imageService: "cloudflare"
+    imageService: "cloudflare"
   }),
+
+  image: {
+    domains: ["mintdealsbackend-production.up.railway.app", "res.cloudinary.com"],
+  },
 
   vite: {
     plugins: [tailwindcss()]

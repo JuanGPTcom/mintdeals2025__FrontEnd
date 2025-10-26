@@ -1,182 +1,43 @@
 ---
-export const prerender = true;
+// REMOVED prerender - this page now renders on-demand with KV caching
+// This prevents build timeouts from sequential API calls
 
 import Layout from '../layouts/Layout.astro';
-
-// Dutchie API configuration
-const DUTCHIE_API_URL = 'https://plus.dutchie.com/plus/2021-07/graphql';
-const DUTCHIE_API_KEY = 'public-eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJBUEktQ0xJRU5UIiwiZXhwIjozMzI4NzcyNTY2OCwiaWF0IjoxNzMwODE2ODY4LCJpc3MiOiJodHRwczovL2R1dGNoaWUuY29tIiwianRpIjoiNzFmYjcyYjItMThmNy00OWE0LTkwYjgtYjVjMDY0NWZhMjZlIiwiZW50ZXJwcmlzZV9pZCI6IjQ1ODZkZmZkLTVmOTEtNGUxZi04OThhLWJmMjMzMjQ4MzBjMSIsInV1aWQiOiJhNzM4MGE0MC1iMmM5LTQ2ZDktOWY5My1jZTEwM2JjZGM0MjkifQ.XZyCX1ZrNy75e3RcqukMUPffIqxEBnWUZ_o52V4VGco';
+import {
+  fetchDutchieStores,
+  fetchMultipleStoreSpecials,
+  getCategoryIcon,
+  calculateDiscount,
+  formatPrice
+} from '../lib/dutchie-utils';
 
 // Initialize data
 let dutchieStores = [];
 let storeSpecials = [];
 let apiErrors = [];
 let totalSpecials = 0;
+let fetchDuration = 0;
 
-// GraphQL query to fetch all stores - only non-nullable fields
-const STORES_QUERY = `
-  query GetStores {
-    retailers {
-      id
-      name
-      address
-      phone
-    }
-  }
-`;
-
-// GraphQL query to fetch products on special for a specific store
-const SPECIALS_QUERY = `
-  query GetSpecialProducts($retailerId: ID!) {
-    menu(retailerId: $retailerId) {
-      products {
-        id
-        name
-        brand {
-          name
-        }
-        category
-        subcategory
-        image
-        description
-        potencyCbd {
-          formatted
-        }
-        potencyThc {
-          formatted
-        }
-        variants {
-          id
-          option
-          priceRec
-          specialPriceRec
-          quantity
-        }
-      }
-    }
-  }
-`;
-
-// Enterprise ID from the API key
-const ENTERPRISE_ID = "4586dffd-5f91-4e1f-898a-bf23324830c1";
-
-// Helper functions
-function getCategoryIcon(category) {
-  const icons = {
-    'FLOWER': '🌿',
-    'PRE_ROLLS': '🚬',
-    'VAPORIZERS': '💨',
-    'CONCENTRATES': '🍯',
-    'EDIBLES': '🍭',
-    'TOPICALS': '🧴',
-    'CARTRIDGES': '🖊️',
-    'TINCTURES': '💧',
-    'ACCESSORIES': '🔧',
-    'CBD': '🌱'
-  };
-  return icons[category] || '🌿';
-}
-
-function calculateDiscount(regular, special) {
-  if (!regular || !special || special >= regular) return 0;
-  return Math.round(((regular - special) / regular) * 100);
-}
-
-function formatPrice(price) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2
-  }).format(price / 100);
-}
-
-async function fetchFromDutchie(query, variables) {
-  const response = await fetch(DUTCHIE_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${DUTCHIE_API_KEY}`,
-    },
-    body: JSON.stringify({ query, variables })
-  });
-
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} - ${responseText}`);
-  }
-
-  const data = JSON.parse(responseText);
-
-  if (data.errors) {
-    throw new Error(`GraphQL Error: ${data.errors.map(e => e.message).join(', ')}`);
-  }
-
-  return data.data;
-}
-
-// Step 1: Fetch all stores
+// Fetch stores and specials using parallel utilities with KV caching
 try {
-  console.log('🚀 Step 1: Fetching all Dutchie stores');
-
-  const storesData = await fetchFromDutchie(STORES_QUERY, {});
-
-  dutchieStores = storesData?.retailers || [];
-  console.log(`✅ Found ${dutchieStores.length} Dutchie stores`);
+  // Step 1: Fetch all stores (with KV caching)
+  dutchieStores = await fetchDutchieStores(Astro.locals);
 
   if (dutchieStores.length > 0) {
-    dutchieStores.forEach(store => {
-      console.log(`🏪 Store: ${store.name} - ID: ${store.id}`);
-    });
+    // Step 2: Fetch specials for all stores IN PARALLEL (with KV caching and timeouts)
+    const result = await fetchMultipleStoreSpecials(dutchieStores, Astro.locals);
+
+    storeSpecials = result.storeSpecials;
+    totalSpecials = result.totalSpecials;
+    apiErrors = result.errors;
+    fetchDuration = result.duration;
+  } else {
+    console.log('❌ No stores available to fetch specials from');
   }
 } catch (error) {
-  console.error('❌ Error fetching Dutchie stores:', error);
-  apiErrors.push(`Stores fetch error: ${error.message}`);
+  console.error('❌ Error in data fetching:', error);
+  apiErrors.push(`General error: ${error.message}`);
 }
-
-// Step 2: Fetch specials for each store
-if (dutchieStores.length > 0) {
-  console.log('🚀 Step 2: Fetching specials for each store...');
-
-  for (const store of dutchieStores) {
-    try {
-      console.log(`🔍 Fetching specials for ${store.name} (ID: ${store.id})`);
-
-      const specialsData = await fetchFromDutchie(SPECIALS_QUERY, {
-        retailerId: store.id
-      });
-
-      if (specialsData?.menu?.products) {
-        // Filter products that have special prices
-        const specialProducts = specialsData.menu.products.filter(product => {
-          return product.variants?.some(v => v.specialPriceRec && v.specialPriceRec !== v.priceRec);
-        });
-
-        if (specialProducts.length > 0) {
-          storeSpecials.push({
-            store: store,
-            products: specialProducts,
-            specialCount: specialProducts.length
-          });
-
-          totalSpecials += specialProducts.length;
-          console.log(`✅ Found ${specialProducts.length} special products at ${store.name}`);
-        } else {
-          console.log(`📝 No special products found at ${store.name}`);
-        }
-      } else {
-        console.log(`❌ No menu data found for ${store.name}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error fetching specials for ${store.name}:`, error);
-      apiErrors.push(`${store.name}: ${error.message}`);
-    }
-  }
-} else {
-  console.log('❌ No stores available to fetch specials from');
-}
-
-console.log(`🎯 Final Results: ${storeSpecials.length} stores with specials, ${totalSpecials} total special products`);
 
 // Fallback data if no real data is available
 if (storeSpecials.length === 0) {
@@ -325,16 +186,21 @@ if (storeSpecials.length === 0) {
     <!-- Debug Info (visible in development) -->
     <div class="bg-gray-900/80 border border-gray-600 text-gray-200 px-6 py-4 mx-4 mt-4 rounded-xl">
       <h3 class="font-semibold mb-3">🔧 API Debug Information:</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div>
-          <p><strong>Enterprise ID:</strong> {ENTERPRISE_ID}</p>
+          <p><strong>Rendering Mode:</strong> 🚀 On-Demand (SSR)</p>
           <p><strong>Dutchie Stores Found:</strong> {dutchieStores.length}</p>
           <p><strong>Stores with Specials:</strong> {storeSpecials.length}</p>
         </div>
         <div>
           <p><strong>Total Special Products:</strong> {totalSpecials}</p>
           <p><strong>API Errors:</strong> {apiErrors.length}</p>
-          <p><strong>Data Source:</strong> {storeSpecials.length > 0 && !apiErrors.length ? '🟢 Live Dutchie API' : '🟡 Fallback/Demo Data'}</p>
+          <p><strong>Fetch Duration:</strong> {fetchDuration > 0 ? `${fetchDuration}s` : 'N/A'}</p>
+        </div>
+        <div>
+          <p><strong>Caching:</strong> 💾 Cloudflare KV (15min TTL)</p>
+          <p><strong>Parallel Fetching:</strong> ✅ Enabled</p>
+          <p><strong>Timeout Protection:</strong> ✅ 10s per store</p>
         </div>
       </div>
       {apiErrors.length > 0 && (

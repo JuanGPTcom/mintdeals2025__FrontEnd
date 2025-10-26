@@ -1,21 +1,9 @@
 ---
-export const prerender = true;
-
-export async function getStaticPaths() {
-  try {
-    const response = await fetch('https://mintdealsbackend-production.up.railway.app/api/stores?pagination[pageSize]=100');
-    const data = await response.json();
-
-    return data.data.map((store: any) => ({
-      params: { locationSlug: store.slug }
-    }));
-  } catch (error) {
-    console.error('Error fetching stores:', error);
-    return [];
-  }
-}
+// REMOVED prerender and getStaticPaths - this page now renders on-demand with KV caching
+// This prevents build timeouts from fetching Dutchie data for 32+ locations
 
 import Layout from '../../../layouts/Layout.astro';
+import { fetchStoreSpecials } from '../../../lib/dutchie-utils';
 
 const { locationSlug } = Astro.params;
 const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';
@@ -59,76 +47,9 @@ try {
 
       console.log('✅ Store found:', store.name);
 
-      // Fetch specials from Dutchie if we have a store ID
+      // Fetch specials from Dutchie if we have a store ID (with KV caching and timeout)
       if (store.dutchieStoreID) {
-        console.log('🔍 Fetching Dutchie specials for store:', store.dutchieStoreID);
-
-        try {
-          const specialsResponse = await fetch('https://dutchie.com/graphql', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              query: `
-                query SpecialProducts($retailerId: ID!) {
-                  filteredProducts(
-                    retailerId: $retailerId
-                    filter: {
-                      Status: {
-                        strainType: null
-                        Status: "Active"
-                        onSale: true
-                      }
-                    }
-                    page: 0
-                    perPage: 50
-                  ) {
-                    products {
-                      id
-                      name
-                      brandName
-                      category
-                      images {
-                        url
-                        description
-                      }
-                      variants {
-                        id
-                        option
-                        pricingTierData {
-                          price
-                          discount
-                          tier
-                        }
-                        specialPriceCents
-                        quantity
-                      }
-                      strainType
-                      potencyCbd {
-                        formatted
-                      }
-                      potencyThc {
-                        formatted
-                      }
-                    }
-                  }
-                }
-              `,
-              variables: {
-                retailerId: store.dutchieStoreID
-              }
-            })
-          });
-
-          if (specialsResponse.ok) {
-            const specialsData = await specialsResponse.json();
-            specials = specialsData?.data?.filteredProducts?.products || [];
-            console.log(`✅ Found ${specials.length} special products`);
-          }
-        } catch (error) {
-          console.error('❌ Error fetching Dutchie specials:', error);
-        }
+        specials = await fetchStoreSpecials(store.dutchieStoreID, store.name, Astro.locals);
       }
     } else {
       console.log('❌ Store not found:', locationSlug);

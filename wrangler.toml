@@ -4,8 +4,26 @@ compatibility_flags = ["nodejs_compat"]
 
 pages_build_output_dir = "./dist"
 
+# Node.js compatibility for server-side rendering
+node_compat = true
+
+# KV namespace for Dutchie API caching
+# This caches Dutchie store data and specials to reduce API calls
+# and improve performance for on-demand rendered pages
+[[kv_namespaces]]
+binding = "DUTCHIE_CACHE"
+id = "your-kv-namespace-id-here"  # Replace with actual KV namespace ID from Cloudflare dashboard
+
 [env.production]
 vars = { BUN_VERSION = "1.1.27" }
 
+[[env.production.kv_namespaces]]
+binding = "DUTCHIE_CACHE"
+id = "your-production-kv-namespace-id"  # Replace with production KV namespace ID
+
 [env.preview]
 vars = { BUN_VERSION = "1.1.27" }
+
+[[env.preview.kv_namespaces]]
+binding = "DUTCHIE_CACHE"
+id = "your-preview-kv-namespace-id"  # Replace with preview KV namespace ID

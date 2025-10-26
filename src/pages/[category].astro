@@ -1,7 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-export const prerender = true;
+// REMOVED prerender - this page now renders on-demand
+// This prevents build timeouts from generating many category pages at build time
 
 export async function getStaticPaths() {
   const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';

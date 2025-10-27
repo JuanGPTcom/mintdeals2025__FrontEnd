@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';
 
@@ -170,10 +171,14 @@ const regionImageUrl = getImageUrl(region?.image) || getImageUrl(region?.Image);
           <!-- Region Image -->
           <div class="lg:col-span-1">
             {regionImageUrl ? (
-              <img
+              <Image
                 src={regionImageUrl}
                 alt={regionName}
+                width={600}
+                height={320}
                 class="w-full h-64 lg:h-80 object-cover rounded-lg shadow-xl border-4 border-yellow-400"
+                loading="eager"
+                format="webp"
               />
             ) : (
               <div class="w-full h-64 lg:h-80 bg-gradient-to-br from-green-900 to-green-800 rounded-lg shadow-xl border-4 border-yellow-400 flex items-center justify-center">
@@ -248,10 +253,14 @@ const regionImageUrl = getImageUrl(region?.image) || getImageUrl(region?.Image);
                 return (
                   <div class="overflow-hidden transition-all transform bg-black border-2 border-green-500 rounded-lg shadow-lg hover:shadow-2xl hover:border-yellow-400 hover:scale-105">
                     {storeImage && (
-                      <img
+                      <Image
                         src={storeImage}
                         alt={store.name}
+                        width={400}
+                        height={192}
                         class="object-cover w-full h-48"
+                        loading="lazy"
+                        format="webp"
                       />
                     )}
                     <div class="p-6">

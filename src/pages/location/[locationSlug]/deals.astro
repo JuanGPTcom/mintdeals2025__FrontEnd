@@ -4,6 +4,7 @@
 
 import Layout from '../../../layouts/Layout.astro';
 import { fetchStoreSpecials } from '../../../lib/dutchie-utils';
+import { Image } from 'astro:assets';
 
 const { locationSlug } = Astro.params;
 const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';
@@ -205,7 +206,15 @@ const pageDescription = store ?
 
                         {/* Product Image */}
                         {imageUrl ? (
-                          <img src={imageUrl} alt={product.name} class="w-full h-48 object-cover" />
+                          <Image
+                            src={imageUrl}
+                            alt={product.name}
+                            width={400}
+                            height={192}
+                            class="w-full h-48 object-cover"
+                            loading="lazy"
+                            format="webp"
+                          />
                         ) : (
                           <div class="w-full h-48 bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center">
                             <span class="text-6xl">

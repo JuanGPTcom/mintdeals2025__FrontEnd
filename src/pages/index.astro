@@ -371,9 +371,11 @@ try {
                   <Image
                     src={category.image}
                     alt={category.title}
-                    inferSize={true}
+                    width={800}
+                    height={320}
                     class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
                     loading="lazy"
+                    format="webp"
                   />
                 </div>
               ) : (
@@ -454,9 +456,11 @@ try {
                   <Image
                     src={region.image}
                     alt={region.name}
-                    inferSize={true}
+                    width={800}
+                    height={320}
                     class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
                     loading="lazy"
+                    format="webp"
                   />
                 </div>
               ) : (
@@ -558,9 +562,11 @@ try {
                   <Image
                     src={store.image}
                     alt={store.name}
-                    inferSize={true}
+                    width={800}
+                    height={384}
                     class="object-cover w-full h-48"
                     loading="lazy"
+                    format="webp"
                   />
                 )}
                 <div class="p-6">

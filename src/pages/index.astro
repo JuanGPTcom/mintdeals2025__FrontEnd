@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 // Initialize data arrays
 let stores = [];
@@ -367,10 +368,12 @@ try {
               {/* Category Image or Icon */}
               {category.image ? (
                 <div class="h-40 overflow-hidden bg-gradient-to-br from-green-900/30 to-black/50">
-                  <img
+                  <Image
                     src={category.image}
                     alt={category.title}
+                    inferSize={true}
                     class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
+                    loading="lazy"
                   />
                 </div>
               ) : (
@@ -448,10 +451,12 @@ try {
               {/* Region Image */}
               {region.image ? (
                 <div class="h-40 overflow-hidden bg-gradient-to-br from-green-900/30 to-black/50">
-                  <img
+                  <Image
                     src={region.image}
                     alt={region.name}
+                    inferSize={true}
                     class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
+                    loading="lazy"
                   />
                 </div>
               ) : (
@@ -550,10 +555,12 @@ try {
                 data-name={store.name}
               >
                 {store.image && (
-                  <img
+                  <Image
                     src={store.image}
                     alt={store.name}
+                    inferSize={true}
                     class="object-cover w-full h-48"
+                    loading="lazy"
                   />
                 )}
                 <div class="p-6">

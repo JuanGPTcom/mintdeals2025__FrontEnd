@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 // REMOVED prerender - this page now renders on-demand
 // This prevents build timeouts from generating many category pages at build time
@@ -506,10 +507,14 @@ const categoryIcon = categoryIcons[category] || '🌱';
       <div class="px-4 mx-auto sm:px-6 lg:px-8 max-w-5xl">
         <div class="text-center">
           {categoryImage ? (
-            <img
+            <Image
               src={categoryImage}
               alt={categoryName}
+              width={128}
+              height={128}
               class="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 rounded-full object-cover border-4 border-yellow-400 shadow-2xl"
+              loading="eager"
+              format="webp"
             />
           ) : (
             <div class="text-6xl md:text-8xl mb-6">{categoryIcon}</div>
@@ -538,10 +543,14 @@ const categoryIcon = categoryIcons[category] || '🌱';
           <div class="p-6 bg-black border-2 border-green-500 rounded-lg md:p-8 overflow-hidden">
             <div class="flex flex-col items-center mb-8 text-center gap-4">
               {categoryImage ? (
-                <img
+                <Image
                   src={categoryImage}
                   alt={categoryName}
+                  width={80}
+                  height={80}
                   class="object-cover w-20 h-20 rounded-lg"
+                  loading="lazy"
+                  format="webp"
                 />
               ) : (
                 <div class="w-20 h-20 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -583,10 +592,14 @@ const categoryIcon = categoryIcons[category] || '🌱';
                   <div class="relative overflow-hidden transition-all transform bg-black border-2 border-green-500 group rounded-xl hover:border-yellow-400 hover:scale-105">
                     {imageUrl ? (
                       <div class="h-40 overflow-hidden bg-gradient-to-br from-green-900/30 to-black/50">
-                        <img
+                        <Image
                           src={imageUrl}
                           alt={productName}
+                          width={400}
+                          height={160}
                           class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
+                          loading="lazy"
+                          format="webp"
                         />
                       </div>
                     ) : (

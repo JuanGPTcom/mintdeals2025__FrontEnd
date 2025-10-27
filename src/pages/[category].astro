@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Image } from 'astro:assets';
+import { transformToWebP } from '../lib/image-utils';
 
 // REMOVED prerender - this page now renders on-demand
 // This prevents build timeouts from generating many category pages at build time
@@ -78,10 +79,12 @@ try {
       // Try to get image
       const imageData = catData.Image || catData.image;
       if (imageData?.url) {
-        categoryImage = imageData.url.startsWith('http') ? imageData.url : `${API_BASE}${imageData.url}`;
+        const rawUrl = imageData.url.startsWith('http') ? imageData.url : `${API_BASE}${imageData.url}`;
+        categoryImage = transformToWebP(rawUrl, { width: 128, height: 128 });
       } else if (imageData?.data?.attributes?.url) {
         const url = imageData.data.attributes.url;
-        categoryImage = url.startsWith('http') ? url : `${API_BASE}${url}`;
+        const rawUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+        categoryImage = transformToWebP(rawUrl, { width: 128, height: 128 });
       }
     }
   }
@@ -584,9 +587,10 @@ const categoryIcon = categoryIcons[category] || '🌱';
                 const productName = product.name || product.Name || 'Product';
                 const productDescription = product.description || product.Description || '';
                 const productImage = product.image?.url || product.Image?.url;
-                const imageUrl = productImage ?
+                const rawImageUrl = productImage ?
                   (productImage.startsWith('http') ? productImage : `${API_BASE}${productImage}`) :
                   null;
+                const imageUrl = transformToWebP(rawImageUrl, { width: 400, height: 160 });
 
                 return (
                   <div class="relative overflow-hidden transition-all transform bg-black border-2 border-green-500 group rounded-xl hover:border-yellow-400 hover:scale-105">

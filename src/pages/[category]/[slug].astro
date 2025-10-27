@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';
 
@@ -187,10 +188,14 @@ try {
             return (
               <div class="bg-black border-2 border-green-500 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-400/30 transition-all duration-300 hover:scale-105">
                 {imageUrl ? (
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={productName}
+                    width={400}
+                    height={192}
                     class="w-full h-48 object-cover"
+                    loading="lazy"
+                    format="webp"
                   />
                 ) : (
                   <div class="w-full h-48 bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">

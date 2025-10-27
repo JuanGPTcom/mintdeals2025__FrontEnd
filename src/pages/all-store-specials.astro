@@ -3,6 +3,7 @@
 // This prevents build timeouts from sequential API calls
 
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 import {
   fetchDutchieStores,
   fetchMultipleStoreSpecials,
@@ -285,10 +286,14 @@ if (storeSpecials.length === 0) {
                     {/* Product Image */}
                     <div class="relative h-48 overflow-hidden bg-gray-800">
                       {product.image ? (
-                        <img
+                        <Image
                           src={product.image}
                           alt={product.name}
+                          width={400}
+                          height={192}
                           class="object-cover w-full h-full transition-transform group-hover:scale-110"
+                          loading="lazy"
+                          format="webp"
                         />
                       ) : (
                         <div class="flex items-center justify-center w-full h-full">

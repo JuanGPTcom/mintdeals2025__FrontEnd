@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 // Dutchie API configuration
 const DUTCHIE_API_URL = 'https://plus.dutchie.com/plus/2021-07/graphql';
@@ -414,10 +415,14 @@ if (specialProducts.length === 0) {
                   {/* Product Image */}
                   <div class="relative h-48 overflow-hidden bg-gray-800">
                     {product.image ? (
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
+                        width={400}
+                        height={192}
                         class="object-cover w-full h-full transition-transform group-hover:scale-110"
+                        loading="lazy"
+                        format="webp"
                       />
                     ) : (
                       <div class="flex items-center justify-center w-full h-full">

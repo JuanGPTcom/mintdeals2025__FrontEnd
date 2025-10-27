@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 // Fetch categories from Railway Strapi API
 let categoriesData = [];
@@ -406,10 +407,14 @@ const totalProducts = categories.reduce((sum, cat) => sum + cat.productCount, 0)
                 {/* Category Image or Icon */}
                 {category.image ? (
                   <div class="h-40 overflow-hidden bg-gradient-to-br from-green-900/30 to-black/50">
-                    <img
+                    <Image
                       src={category.image}
                       alt={category.name}
+                      width={400}
+                      height={160}
                       class="object-cover w-full h-full transition-opacity opacity-80 group-hover:opacity-100"
+                      loading="lazy"
+                      format="webp"
                     />
                   </div>
                 ) : (

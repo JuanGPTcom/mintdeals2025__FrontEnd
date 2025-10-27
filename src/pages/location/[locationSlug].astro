@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import DutchieEmbed from '../../components/DutchieEmbed.astro';
 import DutchieCarousel from '../../components/DutchieCarousel.astro';
+import { Image } from 'astro:assets';
 
 const API_BASE = 'https://mintdealsbackend-production.up.railway.app/api';
 const { locationSlug } = Astro.params;
@@ -158,10 +159,14 @@ try {
         <!-- Store Image -->
         <div class="lg:col-span-1">
           {storeImage ? (
-            <img
+            <Image
               src={storeImage}
               alt={storeName}
+              width={600}
+              height={320}
               class="w-full h-64 lg:h-80 object-cover rounded-lg shadow-xl border-4 border-yellow-400"
+              loading="eager"
+              format="webp"
             />
           ) : (
             <div class="w-full h-64 lg:h-80 bg-gradient-to-br from-green-900 to-green-800 rounded-lg shadow-xl border-4 border-yellow-400 flex items-center justify-center">

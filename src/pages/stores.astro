@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 let regions = [];
 let stores = [];
@@ -391,10 +392,14 @@ try {
 
             <div class="relative">
               {store.StoreImage ? (
-                <img
+                <Image
                   src={store.StoreImage.url}
                   alt={store.Name}
+                  width={400}
+                  height={192}
                   class="object-cover w-full h-48"
+                  loading="lazy"
+                  format="webp"
                 />
               ) : (
                 <div class="w-full h-48 bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center relative">
